@@ -1129,8 +1129,6 @@ type SettingsExperimentalFeatures struct {
 	ShowQueryBuilder *bool `json:"showQueryBuilder,omitempty"`
 	// ShowRepogroupHomepage description: Enables the repository group homepage
 	ShowRepogroupHomepage *bool `json:"showRepogroupHomepage,omitempty"`
-	// SplitSearchModes description: Enables toggling between the current omni search mode, and experimental interactive search mode.
-	SplitSearchModes *bool `json:"splitSearchModes,omitempty"`
 }
 
 // SiteConfiguration description: Configuration for a Sourcegraph site.

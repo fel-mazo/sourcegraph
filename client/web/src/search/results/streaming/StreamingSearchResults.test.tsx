@@ -57,7 +57,7 @@ describe('StreamingSearchResults', () => {
         location: history.location,
         authenticatedUser: null,
 
-        navbarSearchQueryState: { query: '', cursorPosition: 0 },
+        navbarSearchQueryState: { query: '' },
 
         settingsCascade: {
             subjects: null,
