@@ -338,7 +338,7 @@ func (sr *SearchResultsResolver) DynamicFilters(ctx context.Context) []*searchFi
 			// are @ and :, both of which are disallowed in git refs
 			filter = filter + fmt.Sprintf(`@%s`, rev)
 		}
-		limitHit := sr.searchResultsCommon.status.IsAny(repo.IDInt32(), search.RepoStatusLimitHit)
+		limitHit := sr.searchResultsCommon.status.Get(repo.IDInt32()).Has(search.RepoStatusLimitHit)
 		// Increment number of matches per repo. Add will override previous entry for uri
 		repoToMatchCount[uri] += lineMatchCount
 		add(filter, uri, repoToMatchCount[uri], limitHit, "repo", scoreDefault)

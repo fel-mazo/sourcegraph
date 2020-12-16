@@ -32,6 +32,10 @@ var repoStatusName = []struct {
 	{RepoStatusTimedout, "timedout"},
 }
 
+func (s RepoStatus) Has(o RepoStatus) bool {
+	return s&o == o
+}
+
 func (s RepoStatus) String() string {
 	var parts []string
 	for _, p := range repoStatusName {
@@ -70,11 +74,11 @@ func (m *RepoStatusMap) Predicate(mask RepoStatus, p func(api.RepoID, RepoStatus
 	}
 }
 
-func (m *RepoStatusMap) IsAny(id api.RepoID, mask RepoStatus) bool {
+func (m *RepoStatusMap) Get(id api.RepoID) RepoStatus {
 	if m == nil {
-		return false
+		return 0
 	}
-	return m.m[id]&mask != mask
+	return m.m[id]
 }
 
 func (m *RepoStatusMap) Update(id api.RepoID, status RepoStatus) {
