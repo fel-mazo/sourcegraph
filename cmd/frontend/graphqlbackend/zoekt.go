@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/url"
 	"regexp/syntax"
-	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -241,23 +240,21 @@ func (s *indexedSearchRequest) Search(ctx context.Context) (searchResultsCommon,
 		return searchResultsCommon{}, nil, err
 	}
 
-	repos := make([]*types.RepoName, 0, len(s.Repos()))
-	for _, r := range s.Repos() {
-		repos = append(repos, r.Repo)
-	}
-	sort.Sort(types.RepoNames(repos))
-
-	var timedout []*types.RepoName
+	statusMask := search.RepoStatusSearched | search.RepoStatusIndexed
 	if noResultsInTimeout {
-		timedout = repos
+		statusMask |= search.RepoStatusTimedout
+	}
+	var statusMap search.RepoStatusMap
+	for _, r := range s.Repos() {
+		statusMap.Update(r.Repo.ID, statusMask)
+	}
+	for r := range reposLimitHit {
+		statusMap.Update(r, search.RepoStatusLimitHit)
 	}
 
 	return searchResultsCommon{
 		limitHit: limitHit,
-		searched: repos,
-		indexed:  repos,
-		partial:  reposLimitHit,
-		timedout: timedout,
+		status:   statusMap,
 	}, fm, nil
 }
 
