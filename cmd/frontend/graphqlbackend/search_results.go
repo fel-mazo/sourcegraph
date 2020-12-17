@@ -121,7 +121,7 @@ func (c *searchResultsCommon) RepositoriesCount() int32 {
 
 func (c *searchResultsCommon) repositoryResolvers(mask search.RepoStatus) []*RepositoryResolver {
 	var resolvers []*RepositoryResolver
-	c.status.Predicate(mask, func(id api.RepoID, _ search.RepoStatus) {
+	c.status.Filter(mask, func(id api.RepoID) {
 		resolvers = append(resolvers, &RepositoryResolver{innerRepo: c.repos[id].ToRepo()})
 	})
 	sort.Slice(resolvers, func(a, b int) bool {

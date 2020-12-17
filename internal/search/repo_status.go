@@ -53,14 +53,18 @@ type RepoStatusMap struct {
 	status RepoStatus
 }
 
-func (m *RepoStatusMap) Predicate(mask RepoStatus, p func(api.RepoID, RepoStatus)) {
+func (m *RepoStatusMap) Iterate(f func(api.RepoID, RepoStatus)) {
 	if m == nil {
 		return
 	}
-	if mask == 0 {
-		for id, status := range m.m {
-			p(id, status)
-		}
+
+	for id, status := range m.m {
+		f(id, status)
+	}
+}
+
+func (m *RepoStatusMap) Filter(mask RepoStatus, f func(api.RepoID)) {
+	if m == nil {
 		return
 	}
 
@@ -69,7 +73,7 @@ func (m *RepoStatusMap) Predicate(mask RepoStatus, p func(api.RepoID, RepoStatus
 	}
 	for id, status := range m.m {
 		if status&mask != 0 {
-			p(id, status)
+			f(id)
 		}
 	}
 }

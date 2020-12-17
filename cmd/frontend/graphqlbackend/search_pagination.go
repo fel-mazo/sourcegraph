@@ -414,7 +414,7 @@ func (p *repoPaginationPlan) execute(ctx context.Context, exec executor) (c *sea
 		// first in the results and we need to know the position for the cursor
 		// RepositoryOffset.
 		potentialLastRepos := []*types.RepoName{lastRepoConsumed}
-		sliced.common.status.Predicate(search.RepoStatusCloning|search.RepoStatusMissing, func(id api.RepoID, _ search.RepoStatus) {
+		sliced.common.status.Filter(search.RepoStatusCloning|search.RepoStatusMissing, func(id api.RepoID) {
 			potentialLastRepos = append(potentialLastRepos, sliced.common.repos[id])
 		})
 		sort.Slice(potentialLastRepos, func(i, j int) bool {
@@ -588,7 +588,7 @@ func sliceSearchResultsCommon(common *searchResultsCommon, firstResultRepo, last
 		final.repos[r.ID] = r
 	}
 
-	common.status.Predicate(0, func(id api.RepoID, status search.RepoStatus) {
+	common.status.Iterate(func(id api.RepoID, status search.RepoStatus) {
 		if _, ok := final.repos[id]; ok {
 			final.status.Update(id, status)
 		}
