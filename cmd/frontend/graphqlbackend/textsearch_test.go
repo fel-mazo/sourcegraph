@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
 	"github.com/sourcegraph/sourcegraph/cmd/searcher/protocol"
@@ -85,16 +86,12 @@ func TestSearchFilesInRepos(t *testing.T) {
 	if len(results) != 2 {
 		t.Errorf("expected two results, got %d", len(results))
 	}
-	if v := toRepoNames(common.cloning); !reflect.DeepEqual(v, []api.RepoName{"foo/cloning"}) {
-		t.Errorf("unexpected cloning: %v", v)
-	}
-	sort.Slice(common.missing, func(i, j int) bool { return common.missing[i].Name < common.missing[j].Name }) // to make deterministic
-	if v := toRepoNames(common.missing); !reflect.DeepEqual(v, []api.RepoName{"foo/missing", "foo/missing-db"}) {
-		t.Errorf("unexpected missing: %v", v)
-	}
-	if v := toRepoNames(common.timedout); !reflect.DeepEqual(v, []api.RepoName{"foo/timedout"}) {
-		t.Errorf("unexpected timedout: %v", v)
-	}
+	assertReposStatus(t, common.repos, common.status, map[string]search.RepoStatus{
+		"foo/cloning":    search.RepoStatusCloning,
+		"foo/missing":    search.RepoStatusMissing,
+		"foo/missing-db": search.RepoStatusMissing,
+		"foo/timedout":   search.RepoStatusTimedout,
+	})
 
 	// If we specify a rev and it isn't found, we fail the whole search since
 	// that should be checked earlier.
@@ -113,6 +110,25 @@ func TestSearchFilesInRepos(t *testing.T) {
 	if !gitserver.IsRevisionNotFound(errors.Cause(err)) {
 		t.Fatalf("searching non-existent rev expected to fail with RevisionNotFoundError got: %v", err)
 	}
+}
+
+func assertReposStatus(t *testing.T, gotRepos map[api.RepoID]*types.RepoName, got search.RepoStatusMap, want map[string]search.RepoStatus) {
+	t.Helper()
+	gotM := map[string]search.RepoStatus{}
+	got.Iterate(func(id api.RepoID, mask search.RepoStatus) {
+		gotM[string(gotRepos[id].Name)] = mask
+	})
+	if diff := cmp.Diff(want, gotM); diff != "" {
+		t.Errorf("RepoStatusMap mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func mkStatusMap(m map[string]search.RepoStatus) search.RepoStatusMap {
+	var rsm search.RepoStatusMap
+	for name, status := range m {
+		rsm.Update(mkRepos(name)[0].ID, status)
+	}
+	return rsm
 }
 
 func TestSearchFilesInRepos_multipleRevsPerRepo(t *testing.T) {

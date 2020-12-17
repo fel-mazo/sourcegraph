@@ -558,26 +558,6 @@ func sliceSearchResultsCommon(common *searchResultsCommon, firstResultRepo, last
 		resultCount:      common.resultCount,
 	}
 
-	doAppend := func(dst, src []*types.RepoName) []*types.RepoName {
-		sort.Slice(src, func(i, j int) bool {
-			return repoIsLess(src[i], src[j])
-		})
-		for _, r := range src {
-			if lastResultRepo == "" || string(r.Name) > lastResultRepo {
-				continue
-			}
-			if firstResultRepo != "" && string(r.Name) < firstResultRepo {
-				continue
-			}
-			final.repos[r.ID] = r
-			dst = append(dst, r)
-			if string(r.Name) == lastResultRepo {
-				break
-			}
-		}
-		return dst
-	}
-
 	for _, r := range common.repos {
 		if lastResultRepo == "" || string(r.Name) > lastResultRepo {
 			continue

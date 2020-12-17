@@ -614,13 +614,18 @@ func TestSearchPagination_cloning_missing(t *testing.T) {
 			result(repoName("f"), "a.go"),
 		},
 	}
-	repoMissing := map[string]*types.RepoName{
-		"b": repoName("b"),
-		"e": repoName("e"),
+	reposStatus := func(m map[string]search.RepoStatus) search.RepoStatusMap {
+		var rsm search.RepoStatusMap
+		for name, status := range m {
+			rsm.Update(repoName(name).ID, status)
+		}
+		return rsm
 	}
-	repoCloning := map[string]*types.RepoName{
-		"d": repoName("d"),
-	}
+	status := reposStatus(map[string]search.RepoStatus{
+		"b": search.RepoStatusMissing,
+		"e": search.RepoStatusMissing,
+		"d": search.RepoStatusCloning,
+	})
 	searchRepos := []*search.RepositoryRevisions{
 		repoRevs("a", "master"),
 		repoRevs("b", "master"),
@@ -636,12 +641,7 @@ func TestSearchPagination_cloning_missing(t *testing.T) {
 				results = append(results, res...)
 				common.repos[repoRev.Repo.ID] = &types.RepoName{ID: repoRev.Repo.ID, Name: repoRev.Repo.Name}
 			}
-			if missing, ok := repoMissing[string(repoRev.Repo.Name)]; ok {
-				common.status.Update(missing.ID, search.RepoStatusMissing)
-			}
-			if cloning, ok := repoCloning[string(repoRev.Repo.Name)]; ok {
-				common.status.Update(cloning.ID, search.RepoStatusCloning)
-			}
+			common.status.Update(repoRev.Repo.ID, status.Get(repoRev.Repo.ID))
 		}
 		return
 	}
@@ -683,8 +683,10 @@ func TestSearchPagination_cloning_missing(t *testing.T) {
 			},
 			wantCommon: &searchResultsCommon{
 
-				repos:   reposMap(repoName("b"), repoName("c")),
-				missing: []*types.RepoName{repoName("b")},
+				repos: reposMap(repoName("b"), repoName("c")),
+				status: reposStatus(map[string]search.RepoStatus{
+					"b": search.RepoStatusMissing,
+				}),
 			},
 		},
 		{
@@ -699,8 +701,10 @@ func TestSearchPagination_cloning_missing(t *testing.T) {
 				result(repoName("c"), "a.go"),
 			},
 			wantCommon: &searchResultsCommon{
-				repos:   reposMap(repoName("a"), repoName("b"), repoName("c")),
-				missing: []*types.RepoName{repoName("b")},
+				repos: reposMap(repoName("a"), repoName("b"), repoName("c")),
+				status: reposStatus(map[string]search.RepoStatus{
+					"b": search.RepoStatusMissing,
+				}),
 			},
 		},
 		{
@@ -716,9 +720,12 @@ func TestSearchPagination_cloning_missing(t *testing.T) {
 				result(repoName("f"), "a.go"),
 			},
 			wantCommon: &searchResultsCommon{
-				repos:   reposMap(repoName("a"), repoName("b"), repoName("c"), repoName("d"), repoName("e"), repoName("f")),
-				cloning: []*types.RepoName{repoName("d")},
-				missing: []*types.RepoName{repoName("b"), repoName("e")},
+				repos: reposMap(repoName("a"), repoName("b"), repoName("c"), repoName("d"), repoName("e"), repoName("f")),
+				status: reposStatus(map[string]search.RepoStatus{
+					"b": search.RepoStatusMissing,
+					"e": search.RepoStatusMissing,
+					"d": search.RepoStatusCloning,
+				}),
 			},
 		},
 	}
