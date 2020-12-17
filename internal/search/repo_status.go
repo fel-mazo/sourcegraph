@@ -112,7 +112,7 @@ func (m *RepoStatusMap) All(mask RepoStatus) bool {
 		return false
 	}
 	for _, status := range m.m {
-		if status&mask != 0 {
+		if status&mask == 0 {
 			return false
 		}
 	}
