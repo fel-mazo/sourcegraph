@@ -20,7 +20,7 @@ RUN ls '/generated/grafana'
 
 # Prepare final image
 # when upgrading the Grafana version, please refer to https://about.sourcegraph.com/handbook/engineering/distribution/observability/monitoring#upgrading-grafana
-FROM grafana/grafana:7.2.0@sha256:b1c8a29dc7972bd5773bce5e564dd4bdcd96723dfeee6f5b754a2b3039e39dcb as production
+FROM grafana/grafana:7.3.6@sha256:05bc2b08de2a6cd6260937dc174cc4bdfada29cc7dd13c73e638caad32d26b3e as production
 LABEL com.sourcegraph.grafana.version=7.0.3
 
 ARG COMMIT_SHA="unknown"
