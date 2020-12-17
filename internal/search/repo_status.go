@@ -32,10 +32,6 @@ var repoStatusName = []struct {
 	{RepoStatusTimedout, "timedout"},
 }
 
-func (s RepoStatus) Has(o RepoStatus) bool {
-	return s&o == o
-}
-
 func (s RepoStatus) String() string {
 	var parts []string
 	for _, p := range repoStatusName {
